@@ -16,30 +16,30 @@
     <div id="gameboard"></div>
 
     <script>
-      GameOfLife = (function(logger){
+      GameOfLife = (function(){
         GameOfLife = function(container, options){
           this.options = options;
 
-          options.seed = options.seed || 'random';
-          if(options.seed == 'random') options.seed = generateRandomSeed(options.width, options.height);
-          if(options.seed == 'empty') options.seed = generateEmptySeed(options.width, options.height);
-          /* TODO: allow for an interactive seed generation */
-          this.currentGeneration = options.seed;
+          this.gameboard = drawGameboard(container, options.width, options.height);
 
-          logger.log('initial generation seed: ', options.seed);
-
-          this.newLife = [];
-          this.gameboard = drawGameboard.call(this, container);
-
+          this.engine = new Worker('engine.js');
+          this.engine.addEventListener('message', receiveMessage.bind(this));
         }
 
-        var drawGameboard = function(container){
-          var width = this.options.width;
-          var height = this.options.height;
+        var receiveMessage = function(msg){
+          if(msg.data.cmd && msg.data.cmd == 'log'){
+            msg.data.args.unshift('From Engine: ');
+            console.log.apply(console,msg.data.args);
+          } else {
+            console.log('saving new generation');
+            this.nextGeneration = msg.data;
+          }
+        }
+
+        var drawGameboard = function(container, width, height){
           var fragment = document.createDocumentFragment();
           var table = fragment.appendChild(document.createElement('table'));
           var gameboard = [];
-          var game = this;
 
           var row, cell;
           for(var j = 0; j<height; j++){
@@ -49,8 +49,6 @@
                 cell = row.appendChild(document.createElement('td'));
                 gameboard[i] = gameboard[i] || [];
                 gameboard[i][j] = cell;
-                cell.addEventListener("mousemove", function(){game.newLife.push([i, j]);}, false);
-                cell.addEventListener("click", function(){game.newLife.splice(0,0,[i-1,j-1],[i,j-1],[i+1,j-1],[i-1,j],[i,j],[i+1,j],[i-1,j+1],[i,j+1],[i+1,j+1]);}, false);
               })(i,j);
             }
           }
@@ -58,68 +56,13 @@
           return gameboard;
         }
 
-        var generateRandomSeed = function(width, height){
-          return generateSeed(width, height, function(){return (Math.random() > 0.9) ? 1 : 0; });
-        }
-        var generateEmptySeed = function(width,height){
-          return generateSeed(width, height, function(){return 0; });
-        }
-        var generateSeed = function(width, height, fn){
-          logger.log('generating seed for dimentions ', width, height);
-          var generation = [];
-          for(var i=0; i<width; i++){
-            for(var j=0; j<height; j++){
-              generation[i] = generation[i] || [];
-              generation[i][j] = fn(i, j)
-            }
-          }
-          return generation;
-        }
-
-        var computeNextGeneration = function(){
-          var prevRow, nextRow, prevCol, nextCol, alive;
-          var nextGeneration = [];
-          for(var i = 0; i<this.options.width; i++){
-            for(var j=0; j<this.options.height; j++){
-              prevRow = j==0 ? this.options.height - 1 : j - 1;
-              prevCol = i==0 ? this.options.width - 1 : i - 1;
-              nextRow = ( j + 1 ) % this.options.height;
-              nextCol = ( i + 1 ) % this.options.width;
-              livingNeighbors = this.currentGeneration[prevCol][prevRow]
-                                + this.currentGeneration[i][prevRow]
-                                + this.currentGeneration[nextCol][prevRow]
-                                + this.currentGeneration[prevCol][j]
-                                + this.currentGeneration[nextCol][j]
-                                + this.currentGeneration[prevCol][nextRow]
-                                + this.currentGeneration[i][nextRow]
-                                + this.currentGeneration[nextCol][nextRow];
-              alive = false;
-              if(this.currentGeneration[i][j]){
-                alive = livingNeighbors == 2 || livingNeighbors == 3;
-              } else {
-                alive = livingNeighbors == 3;
-              }
-
-              nextGeneration[i] = nextGeneration[i] || [];
-              nextGeneration[i][j] = alive ? 1 : 0;
-            }
-          }
-          var newLife;
-          while(newLife = this.newLife.pop()){
-            nextGeneration[newLife[0]][newLife[1]] = 1;
-          }
-          return registerNewGeneration.call(this, nextGeneration);
-        }
-
-        var registerNewGeneration = function(nextGeneration){
-          logger.log('New Generation: ', nextGeneration);
-          this.currentGeneration = nextGeneration;
-          drawGeneration.call(this, nextGeneration);
-          var game = this;
-          window.requestAnimationFrame(function(){computeNextGeneration.apply(game)});
-        }
-
-        var drawGeneration = function(nextGeneration){
+        var drawGeneration = function(){
+          console.log('drawing generation');
+          requestAnimationFrame(drawGeneration.bind(this));
+          if(!this.nextGeneration) return;
+          console.log('found generation');
+          nextGeneration = this.nextGeneration;
+          this.nextGeneration = undefined;
           for(var i=0; i<this.options.width; i++){
             for(var j=0; j<this.options.height; j++){
               this.gameboard[i][j].className = nextGeneration[i][j] ? "living" : "";
@@ -128,14 +71,15 @@
         }
 
         GameOfLife.prototype.start = function(){
-          logger.log('Starting the Game of Life. ', this.gameboard, this.options);
+          console.log('Starting the Game of Life. ', this.gameboard, this.options);
           var game = this;
-          window.requestAnimationFrame(function(){computeNextGeneration.apply(game)});
+          this.engine.postMessage({cmd: 'start', options: this.options});
+          requestAnimationFrame(drawGeneration.bind(this));
         }
 
 
         return GameOfLife
-      })({log: function(){}})
+      })()
 
       new GameOfLife(document.getElementById('gameboard'), {seed: null, width: 500, height: 500}).start();
     </script>
