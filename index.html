@@ -3,11 +3,10 @@
   <head>
 
     <style>
-      html, body { height: 100%; padding: 0; margin: 0}
-      #gameboard { height: 100%; }
-      table { border-collapse: collapse; border: 1px solid #000; width: 100%; height: 100%; }
-      td { background: #fff; }
-      td.living { background: #000; }
+      html, body { width: 100%; height: 100%; margin: 0; padding: 0; background: #343434; }
+      #gameboard { text-align: center; height: 100%; width: 100%; }
+      #gameboard:after { content: ' '; width: 0; height: 100%; display: inline-block; vertical-align: middle; }
+      canvas { display: inline-block; vertical-align: middle; border: 1px solid #000; box-shadow: 0 0 50px #333; }
     </style>
   </head>
 
