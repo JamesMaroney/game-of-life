@@ -31,7 +31,7 @@
             msg.data.args.unshift('From Engine: ');
             console.log.apply(console,msg.data.args);
           } else {
-            console.log('saving new generation');
+            //console.log('saving new generation');
             this.nextGeneration = msg.data;
           }
         }
@@ -44,17 +44,20 @@
           return canvas.getContext('2d');
         }
 
-        var livingFillStyle = 'rgb(0,0,0)';
-        var deadFillStyle = 'rgb(255,255,255)';
+        fillStyles = {
+          10: 'rgb(0,0,0)',     // Human
+          1: 'rgb(255,0,0)',    // Zombie
+          0: 'rgb(255,255,255)' // Empty
+        };
         var drawGeneration = function(){
-          console.log('drawing generation');
+          //console.log('drawing generation');
           if(!this.nextGeneration || !this.drawingContext){ requestAnimationFrame(drawGeneration.bind(this)); return; }
-          console.log('found generation');
+          //console.log('found generation');
           nextGeneration = this.nextGeneration;
           this.nextGeneration = undefined;
           for(var i=0; i<this.options.width; i++){
             for(var j=0; j<this.options.height; j++){
-              this.drawingContext.fillStyle = _fillStyle = nextGeneration[i][j] ? livingFillStyle : deadFillStyle;
+              this.drawingContext.fillStyle = fillStyles[nextGeneration[i][j]];
               this.drawingContext.fillRect(i*scale,j*scale,scale,scale);
             }
           }
@@ -62,7 +65,7 @@
         }
 
         GameOfLife.prototype.start = function(){
-          console.log('Starting the Game of Life. ', this.gameboard, this.options);
+          //console.log('Starting the Game of Life. ', this.gameboard, this.options);
           var game = this;
           this.engine.postMessage({cmd: 'start', options: this.options});
           requestAnimationFrame(drawGeneration.bind(this));
