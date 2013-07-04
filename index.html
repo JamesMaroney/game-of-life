@@ -17,10 +17,11 @@
 
     <script>
       GameOfLife = (function(){
+        var scale = 3;
         GameOfLife = function(container, options){
           this.options = options;
 
-          this.gameboard = drawGameboard(container, options.width, options.height);
+          this.drawingContext = drawGameboard(container, options.width, options.height);
 
           this.engine = new Worker('engine.js');
           this.engine.addEventListener('message', receiveMessage.bind(this));
@@ -37,37 +38,28 @@
         }
 
         var drawGameboard = function(container, width, height){
-          var fragment = document.createDocumentFragment();
-          var table = fragment.appendChild(document.createElement('table'));
-          var gameboard = [];
-
-          var row, cell;
-          for(var j = 0; j<height; j++){
-            row = table.appendChild(document.createElement('tr'));
-            for(var i = 0; i<width; i++){
-              (function(i,j){
-                cell = row.appendChild(document.createElement('td'));
-                gameboard[i] = gameboard[i] || [];
-                gameboard[i][j] = cell;
-              })(i,j);
-            }
-          }
-          container.appendChild(fragment);
-          return gameboard;
+          var canvas = document.createElement('canvas');
+          canvas.setAttribute('height', height * scale);
+          canvas.setAttribute('width', width * scale);
+          container.appendChild(canvas);
+          return canvas.getContext('2d');
         }
 
+        var livingFillStyle = 'rgb(0,0,0)';
+        var deadFillStyle = 'rgb(255,255,255)';
         var drawGeneration = function(){
           console.log('drawing generation');
-          requestAnimationFrame(drawGeneration.bind(this));
-          if(!this.nextGeneration) return;
+          if(!this.nextGeneration || !this.drawingContext){ requestAnimationFrame(drawGeneration.bind(this)); return; }
           console.log('found generation');
           nextGeneration = this.nextGeneration;
           this.nextGeneration = undefined;
           for(var i=0; i<this.options.width; i++){
             for(var j=0; j<this.options.height; j++){
-              this.gameboard[i][j].className = nextGeneration[i][j] ? "living" : "";
+              this.drawingContext.fillStyle = _fillStyle = nextGeneration[i][j] ? livingFillStyle : deadFillStyle;
+              this.drawingContext.fillRect(i*scale,j*scale,scale,scale);
             }
           }
+          requestAnimationFrame(drawGeneration.bind(this));
         }
 
         GameOfLife.prototype.start = function(){
@@ -81,7 +73,7 @@
         return GameOfLife
       })()
 
-      new GameOfLife(document.getElementById('gameboard'), {seed: null, width: 500, height: 500}).start();
+      new GameOfLife(document.getElementById('gameboard'), {seed: null, width: 200, height: 200}).start();
     </script>
   </body>
 </html>
