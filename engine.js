@@ -17,7 +17,7 @@ var generateRandomSeed = function(){
   for(var i=0; i<options.width; i++){
     for(var j=0; j<options.height; j++){
       generation[i] = generation[i] || [];
-      generation[i][j] = (Math.random() > 0.9) ? 1 : 0;
+      generation[i][j] = (Math.random() > 0.2) ? 1 : 0;
     }
   }
   return generation;
