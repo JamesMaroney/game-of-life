@@ -8,7 +8,7 @@ onmessage = function(msg){
     console.log('starting game engine');
     options = msg.data.options;
     postMessage(currentGeneration = generateRandomSeed())
-    setInterval(computeNextGeneration, 500);
+    computeNextGeneration();
   }
 }
 
@@ -53,4 +53,5 @@ var computeNextGeneration = function(){
     }
   }
   postMessage(currentGeneration = nextGeneration);
+  setTimeout(computeNextGeneration,0);
 }
