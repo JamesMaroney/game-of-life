@@ -52,13 +52,15 @@
       #controls section.buttons { border-bottom: 0; padding-top: 20px; }
       #controls button { display: inline-block; padding: 3px 12px; border: 1px solid #000; background: #fff; font-family: 'Handlee', cursive; .}
       #controls #run { margin-left: 50px; }
-
+      p.notice { width: 600px; padding: 3px; text-align: center; color: #000; background: #fff; margin: 0 auto 10px; font-family: Arial; box-shadow: 0 0 20px #000; background: yellow; }
     </style>
+
   </head>
 
   <body>
 
     <h1>Game of Life ... and <span class="zombies">ZOMBIES!</span></h1>
+    <p class="notice">!! I've only tested this during development on Chrome 27 !!</p>
 
   <div id="gameboard">
     <form id="controls" onsubmit="return false;">
@@ -274,52 +276,52 @@
           default: 200, toValue: toInt
         },
         zombieStrength : {
-          default: 0.4, toValue: toFloat                     // Percentage likelihood that a single Zombie will infect a human
+          default: 0.4, toValue: toFloat
         },
         zombieCrowdingBoost : {
-          default: 0.002, toValue: toFloat              // Percentage boost for each additional Zombie surrounding a human
+          default: 0.002, toValue: toFloat
         },
         humanStrength : {
-          default: 0.5, toValue: toFloat                      // Percentage likelihood that a human will kill a Zombie
+          default: 0.5, toValue: toFloat
         },
         humanCrowdingBoost : {
-          default: 0.3, toValue: toFloat                 // Percentage boost for each additional human surrounding a Zombie
+          default: 0.3, toValue: toFloat
         },
         likelihoodOfSafeReproduction : {
-          default: 0.5, toValue: toFloat       // Percentage chance that humans will reproduce in peaceful surroundings
+          default: 0.5, toValue: toFloat
         },
         humansRequiredForSafeReproduction : {
-          default: 5, toValue: toInt    // Number of humans needed to constitute peaceful surroundings (and no Zombies)
+          default: 5, toValue: toInt
         },
         likelihoodOfChaoticReproduction : {
-          default: 0.01, toValue: toFloat   // Percentage chance that humans will reproduce with Zombies around
+          default: 0.01, toValue: toFloat
         },
        humansRequiredForChaoticReproduction : {
-          default: 2, toValue: toInt // Number of humans needed to reproduce with Zombies around
+          default: 2, toValue: toInt
         },
         initialHumanPopulation : {
-          default: 0.01, toValue: toFloat           // Percentage of the initial board that will contain human population
+          default: 0.01, toValue: toFloat
         },
         initialZombiePopulation : {
-          default: 0.001, toValue: toFloat          // Percentage of the initial board that will contain Zombie population
+          default: 0.001, toValue: toFloat
         },
         humanOvercrowding : {
-          default: 8, toValue: toInt                // Number of surrounding humans that will result in death due to overcrowding
+          default: 8, toValue: toInt
         },
         zombieOvercrowding : {
-          default: 0, toValue: toInt                // Number of surrounding zombies that will result in death due to overcrowding
+          default: 8, toValue: toInt
         },
         humanMigration : {
-          default: 0.3, toValue: toFloat                    // Likelihood that human populations will travel
+          default: 0.3, toValue: toFloat
         },
         zombieMigration: {
-          default: 0.3, toValue: toFloat         // Likelihood that zombie populations will travel
+          default: 0.3, toValue: toFloat
         },
         humanColonizing : {
-          default: 0.1, toValue: toFloat                    // Tendency for humans to colonize
+          default: 0.1, toValue: toFloat
         },
         edgeBehavior : {
-          default: 'wrap'                     // Whether edges 'wrap' or act as a 'boundary'
+          default: 'wrap'
         },
         generationSpeed: {
           default: 500, toValue: toInt
@@ -348,16 +350,18 @@
 
 
       (function(){
-        var savedSettings, val;
-        if(savedSettings = localStorage['settings']){
-          savedSettings = JSON.parse(savedSettings);
-          for(var i=0,el; el=fields[i]; i++){
-            val = savedSettings[el.getAttribute('name')];
-            if(el.type == 'radio') { if(el.value==val) el.checked = true; }
-            else { el.value = val || ''; }
-          }
-          game.setOptions(savedSettings);
+        var savedSettings, val, settingName;
+        savedSettings = localStorage['settings'] || '{}';
+        savedSettings = JSON.parse(savedSettings);
+        for(var i=0,el; el=fields[i]; i++){
+          settingName = el.getAttribute('name');
+          val = savedSettings[settingName];
+          if(val == undefined) val = settings[settingName]['default'];
+
+          if(el.type == 'radio') { if(el.value==val) el.checked = true; }
+          else { el.value = val || ''; }
         }
+        getSettingValues();
       })()
 
 
