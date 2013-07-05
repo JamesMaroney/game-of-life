@@ -1,29 +1,206 @@
 <!DOCTYPE html>
 <html>
   <head>
-
+    <link href='http://fonts.googleapis.com/css?family=Handlee' rel='stylesheet' type='text/css'>
     <style>
-      html, body { width: 100%; height: 100%; margin: 0; padding: 0; background: #343434; }
+      html, body { width: 100%; height: 100%; margin: 0; padding: 0; background: url('grey_wash_wall.png'); font-family: 'Handlee', cursive; }
+      h1 { text-align: center; color: #F7F5F4; text-shadow: 0 0 15px #000; margin: 10px 0; padding: 0; }
+      h1 .zombies { color: #FF0000; }
       #gameboard { text-align: center; height: 100%; width: 100%; }
       #gameboard:after { content: ' '; width: 0; height: 100%; display: inline-block; vertical-align: middle; }
-      canvas { display: inline-block; vertical-align: middle; border: 1px solid #000; box-shadow: 0 0 50px #333; }
+      #canvas { display: inline-block; vertical-align: middle; background: #fff;
+        -webkit-border-image: url("torn-paper-edges.png") 4 8 7 6 round;
+        border-image: url("torn-paper-edges.png") 4 8 7 6 round;
+        background-clip: padding-box;
+        border-width: 5px;
+      }
+      #controls {
+        display: inline-block; width: 280px; padding: 5px; background: url('ricepaper2.png'); font-size: 12px; vertical-align: middle; text-align: left; padding: 10px;
+        -webkit-border-image: url("torn-paper-edges.png") 4 8 7 6 round;
+        border-image: url("torn-paper-edges.png") 4 8 7 6 round;
+        background-clip: padding-box;
+        border-width: 5px;
+      }
+
+      #controls header { font-weight: bold; font-size: 14px; text-align: left; }
+      #controls section {
+        padding-bottom: 8px;
+        border-bottom: 1px solid #333;
+      }
+      #controls .field {
+        width: 48%;
+        box-sizing: border-box;
+        text-align: left;
+        display: inline-block;
+        overflow: hidden;
+        white-space: nowrap;
+        text-align: right;
+      }
+      #controls .field.full-width { width: 100%; display: block; text-align: left;}
+      #controls .field>*{
+        vertical-align: middle;
+      }
+      #controls label { display: inline-block; margin-right: 5px; min-width: 86px; text-align: right; padding: 5px 0; }
+      #controls label.radio { min-width: auto; text-align: left; }
+      #controls input[type='radio'] { width: auto; }
+      #controls input { width: 34px; text-align: center; }
+
+      #controls fieldset { width: 48%; box-sizing: border-box; display: inline-block; border: 0; padding: 0; margin: 0; }
+      #controls fieldset .field { width: 100%; }
+      #controls fieldset header { font-size: 1em; text-align: center; }
+
+      #controls section.buttons { border-bottom: 0; padding-top: 20px; }
+      #controls button { display: inline-block; padding: 3px 12px; border: 1px solid #000; background: #fff; font-family: 'Handlee', cursive; .}
+      #controls #run { margin-left: 50px; }
+
     </style>
   </head>
 
   <body>
 
-    <div id="gameboard"></div>
+    <h1>Game of Life ... and <span class="zombies">ZOMBIES!</span></h1>
+
+  <div id="gameboard">
+    <form id="controls" onsubmit="return false;">
+      <header>Initial Setup</header>
+      <section>
+
+        <span class="field full-width">
+          <label>Board Size</label>
+          <input type="numeric" name="boardWidth" placeholder="w" />
+          <span>x</span>
+          <input type="numeric" name="boardHeight" placeholder="h" />
+        </span>
+
+        <span class="field full-width">
+          <label>Edge Behavior</label>
+          <label class="radio">
+            <input type="radio" name="edgeBehavior" value="wrap" /> wrap
+          </label>
+          <label class="radio">
+            <input type="radio" name="edgeBehavior" value="boundary" /> boundary
+          </label>
+        </span>
+
+        <span class="field humans">
+          <label>Initial Human<br />Population</label>
+          <input type="numeric" name="initialHumanPopulation" placeholder="%" />
+        </span>
+
+        <span class="field zombies">
+          <label>Initial Zombie<br />Population</label>
+          <input type="numeric" name="initialZombiePopulation" placeholder="%" />
+        </span>
+      </section>
+
+
+      <header>Strength</header>
+      <section>
+        <span class="field humans">
+          <label>Humans</label>
+          <input type="numeric" name="humanStrength" placeholder="%" />
+        </span>
+
+        <span class="field zombies">
+          <label>Zombies</label>
+          <input type="numeric" name="zombieStrength" placeholder="%" />
+        </span>
+
+        <span class="field humans">
+          <label>Crowding<br />Boost</label>
+          <input type="numeric" name="humanCrowdingBoost" placeholder="%" />
+        </span>
+
+        <span class="field zombies">
+          <label>Crowding<br />Boost</label>
+          <input type="numeric" name="zombieCrowdingBoost" placeholder="%" />
+        </span>
+
+      </section>
+
+      <header>Population Overcrowding</header>
+      <section>
+        <span class="field humans">
+          <label>Humans</label>
+          <input type="numeric" name="humanOvercrowding" placeholder="#" />
+        </span>
+
+        <span class="field zombies">
+          <label>Zombies</label>
+          <input type="numeric" name="zombieOvercrowding" placeholder="#" />
+        </span>
+
+      </section>
+
+      <header>Population Migration</header>
+      <section>
+        <span class="field humans">
+          <label>Humans</label>
+          <input type="numeric" name="humanMigration" placeholder="%" />
+        </span>
+
+        <span class="field zombies">
+          <label>Zombies</label>
+          <input type="numeric" name="zombieMigration" placeholder="%" />
+        </span>
+
+        <span class="field humans">
+          <label>Colonizing<br />Likelihood</label>
+          <input type="numeric" name="humanColonizing" placeholder="%" />
+        </span>
+
+      </section>
+
+      <header>Human Reproduction</header>
+      <section>
+        <fieldset>
+          <header>In Safety</header>
+          <span class="field humans">
+            <label>Humans<br />Required</label>
+            <input type="numeric" name="humansRequiredForSafeReproduction" placeholder="#" />
+          </span>
+
+          <span class="field humans">
+            <label>Reproduction<br />Likelihood</label>
+            <input type="numeric" name="likelihoodOfSafeReproduction" placeholder="%" />
+          </span>
+
+        </fieldset>
+
+        <fieldset>
+          <header>Around Zombies</header>
+          <span class="field humans">
+            <label>Humans<br />Required</label>
+            <input type="numeric" name="humansRequiredForChaoticReproduction" placeholder="#" />
+          </span>
+
+          <span class="field humans">
+            <label>Reproduction<br />Likelihood</label>
+            <input type="numeric" name="likelihoodOfChaoticReproduction" placeholder="%" />
+          </span>
+
+        </fieldset>
+      </section>
+
+      <section class="buttons">
+        <span>
+          <label>Generation<br />Step Timing</label>
+          <input type="numeric" name="generationSpeed" placeholder="ms" />
+        </span>
+        <button id="run">Run</button>
+      </section>
+
+    </form><div id="canvas"></div>
+  </div>
 
     <script>
       GameOfLife = (function(){
         var scale = 3;
-        GameOfLife = function(container, options){
-          this.options = options;
-
-          this.drawingContext = drawGameboard(container, options.width, options.height);
-
+        GameOfLife = function(container){
+          this.container = container;
           this.engine = new Worker('engine.js');
           this.engine.addEventListener('message', receiveMessage.bind(this));
+          requestAnimationFrame(drawGeneration.bind(this));
         }
 
         var receiveMessage = function(msg){
@@ -31,12 +208,12 @@
             msg.data.args.unshift('From Engine: ');
             console.log.apply(console,msg.data.args);
           } else {
-            //console.log('saving new generation');
             this.nextGeneration = msg.data;
           }
         }
 
         var drawGameboard = function(container, width, height){
+          container.innerHTML = "";
           var canvas = document.createElement('canvas');
           canvas.setAttribute('height', height * scale);
           canvas.setAttribute('width', width * scale);
@@ -49,14 +226,13 @@
           1: 'rgb(255,0,0)',    // Zombie
           0: 'rgb(255,255,255)' // Empty
         };
+
         var drawGeneration = function(){
-          //console.log('drawing generation');
           if(!this.nextGeneration || !this.drawingContext){ requestAnimationFrame(drawGeneration.bind(this)); return; }
-          //console.log('found generation');
           nextGeneration = this.nextGeneration;
           this.nextGeneration = undefined;
-          for(var i=0; i<this.options.width; i++){
-            for(var j=0; j<this.options.height; j++){
+          for(var i=0; i<this.options.boardWidth; i++){
+            for(var j=0; j<this.options.boardHeight; j++){
               this.drawingContext.fillStyle = fillStyles[nextGeneration[i][j]];
               this.drawingContext.fillRect(i*scale,j*scale,scale,scale);
             }
@@ -65,17 +241,126 @@
         }
 
         GameOfLife.prototype.start = function(){
-          //console.log('Starting the Game of Life. ', this.gameboard, this.options);
-          var game = this;
-          this.engine.postMessage({cmd: 'start', options: this.options});
-          requestAnimationFrame(drawGeneration.bind(this));
+          if(!this.options) throw new Error('Options have not been set. Cannot start game.')
+          this.drawingContext = drawGameboard(this.container, this.options.boardWidth, this.options.boardHeight);
+          this.engine.postMessage({cmd: 'start'});
         }
+
+        GameOfLife.prototype.setOptions = function(o){
+          this.options = o;
+          this.engine.postMessage({cmd: 'set-options', options: this.options});
+        }
+
 
 
         return GameOfLife
       })()
 
-      new GameOfLife(document.getElementById('gameboard'), {seed: null, width: 200, height: 200}).start();
+      var game = new GameOfLife(document.getElementById('canvas'), {width: 20, height: 20});
+
+
+      var notEmpty = function(val){ if(val === undefined || val === null || (val.replace && val.replace(/\s/,'') === '')) return 'required'; }
+      var positive = function(val){ if(val <= 0) return 'positive number required'; }
+
+      var toInt = function(str){ return parseInt(str) || 0; }
+      var toFloat = function(str){ return parseFloat(str) || 0; }
+      var toString = function(str){ return ''+str; }
+
+      var settings = {
+        boardWidth : {
+          default: 200, toValue: toInt, validate: [notEmpty, positive]
+        },
+        boardHeight : {
+          default: 200, toValue: toInt
+        },
+        zombieStrength : {
+          default: 0.4, toValue: toFloat                     // Percentage likelihood that a single Zombie will infect a human
+        },
+        zombieCrowdingBoost : {
+          default: 0.002, toValue: toFloat              // Percentage boost for each additional Zombie surrounding a human
+        },
+        humanStrength : {
+          default: 0.5, toValue: toFloat                      // Percentage likelihood that a human will kill a Zombie
+        },
+        humanCrowdingBoost : {
+          default: 0.3, toValue: toFloat                 // Percentage boost for each additional human surrounding a Zombie
+        },
+        likelihoodOfSafeReproduction : {
+          default: 0.5, toValue: toFloat       // Percentage chance that humans will reproduce in peaceful surroundings
+        },
+        humansRequiredForSafeReproduction : {
+          default: 5, toValue: toInt    // Number of humans needed to constitute peaceful surroundings (and no Zombies)
+        },
+        likelihoodOfChaoticReproduction : {
+          default: 0.01, toValue: toFloat   // Percentage chance that humans will reproduce with Zombies around
+        },
+       humansRequiredForChaoticReproduction : {
+          default: 2, toValue: toInt // Number of humans needed to reproduce with Zombies around
+        },
+        initialHumanPopulation : {
+          default: 0.01, toValue: toFloat           // Percentage of the initial board that will contain human population
+        },
+        initialZombiePopulation : {
+          default: 0.001, toValue: toFloat          // Percentage of the initial board that will contain Zombie population
+        },
+        humanOvercrowding : {
+          default: 8, toValue: toInt                // Number of surrounding humans that will result in death due to overcrowding
+        },
+        zombieOvercrowding : {
+          default: 0, toValue: toInt                // Number of surrounding zombies that will result in death due to overcrowding
+        },
+        humanMigration : {
+          default: 0.3, toValue: toFloat                    // Likelihood that human populations will travel
+        },
+        zombieMigration: {
+          default: 0.3, toValue: toFloat         // Likelihood that zombie populations will travel
+        },
+        humanColonizing : {
+          default: 0.1, toValue: toFloat                    // Tendency for humans to colonize
+        },
+        edgeBehavior : {
+          default: 'wrap'                     // Whether edges 'wrap' or act as a 'boundary'
+        },
+        generationSpeed: {
+          default: 500, toValue: toInt
+        }
+      }
+
+      var fields = document.getElementById('controls').getElementsByTagName('input');
+
+      var getSettingValues = function(){
+        var s = {},settingName;
+        for(var i=0,el; el=fields[i]; i++){
+          settingName = el.getAttribute('name');
+          if(el.type != 'radio' || el.checked ) s[settingName] = (settings[settingName].toValue || toString)(el.value);
+        }
+        localStorage['settings'] = JSON.stringify(s);
+        game.setOptions(s);
+      }
+
+      for(var i=0,el; el=fields[i]; i++){
+        el.addEventListener("keyup", getSettingValues, false);
+        el.addEventListener("click", getSettingValues, false);
+        el.addEventListener("change", getSettingValues, false);
+      }
+
+      document.getElementById('run').addEventListener("click", game.start.bind(game), false);
+
+
+      (function(){
+        var savedSettings, val;
+        if(savedSettings = localStorage['settings']){
+          savedSettings = JSON.parse(savedSettings);
+          for(var i=0,el; el=fields[i]; i++){
+            val = savedSettings[el.getAttribute('name')];
+            if(el.type == 'radio') { if(el.value==val) el.checked = true; }
+            else { el.value = val || ''; }
+          }
+          game.setOptions(savedSettings);
+        }
+      })()
+
+
     </script>
   </body>
 </html>
