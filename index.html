@@ -4,7 +4,7 @@
     <link href='http://fonts.googleapis.com/css?family=Handlee' rel='stylesheet' type='text/css'>
     <style>
       html, body { width: 100%; height: 100%; margin: 0; padding: 0; background: url('grey_wash_wall.png'); font-family: 'Handlee', cursive; }
-      h1 { text-align: center; color: #F7F5F4; text-shadow: 0 0 15px #000; margin: 10px 0; padding: 0; }
+      h1 { text-align: center; color: #F7F5F4; text-shadow: 0 0 15px #000; position: absolute; margin: 0; top: 0; width: 100%; padding: 0; }
       h1 .zombies { color: #FF0000; }
       #gameboard { text-align: center; height: 100%; width: 100%; }
       #gameboard:after { content: ' '; width: 0; height: 100%; display: inline-block; vertical-align: middle; }
@@ -52,15 +52,20 @@
       #controls section.buttons { border-bottom: 0; padding-top: 20px; }
       #controls button { display: inline-block; padding: 3px 12px; border: 1px solid #000; background: #fff; font-family: 'Handlee', cursive; .}
       #controls #run { margin-left: 50px; }
-      p.notice { width: 600px; padding: 3px; text-align: center; color: #000; background: #fff; margin: 0 auto 10px; font-family: Arial; box-shadow: 0 0 20px #000; background: yellow; }
+      p.notice { padding: 3px; text-align: center; color: #000; background: #fff; margin: 0; position: absolute; bottom: 0; left: 0; width: 100%; font-family: Arial; box-shadow: 0 0 20px #000; background: yellow; }
     </style>
 
+    <script>
+      // polyfill requestAnimationFrame :: https://gist.github.com/paulirish/1579671
+      (function(){var e=0;var t=["ms","moz","webkit","o"];for(var n=0;n<t.length&&!window.requestAnimationFrame;++n){window.requestAnimationFrame=window[t[n]+"RequestAnimationFrame"];window.cancelAnimationFrame=window[t[n]+"CancelAnimationFrame"]||window[t[n]+"CancelRequestAnimationFrame"]}if(!window.requestAnimationFrame)window.requestAnimationFrame=function(t,n){var r=(new Date).getTime();var i=Math.max(0,16-(r-e));var s=window.setTimeout(function(){t(r+i)},i);e=r+i;return s};if(!window.cancelAnimationFrame)window.cancelAnimationFrame=function(e){clearTimeout(e)}})()
+    </script>
+    <script src="https://ie-web-worker.googlecode.com/svn/trunk/worker.js"></script>
   </head>
 
   <body>
 
     <h1>Game of Life ... and <span class="zombies">ZOMBIES!</span></h1>
-    <p class="notice">!! I've only tested this during development on Chrome 27 !!</p>
+    <p class="notice">!! I've only tested this during development on Chrome 27, Firefox 22 and IE 10 !!</p>
 
   <div id="gameboard">
     <form id="controls" onsubmit="return false;">
@@ -201,7 +206,8 @@
         GameOfLife = function(container){
           this.container = container;
           this.engine = new Worker('engine.js');
-          this.engine.addEventListener('message', receiveMessage.bind(this));
+          this.engine.onmessage = receiveMessage.bind(this);
+          //this.engine.addEventListener('message', receiveMessage.bind(this));
           requestAnimationFrame(drawGeneration.bind(this));
         }
 
