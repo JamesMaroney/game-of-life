@@ -82,9 +82,9 @@
 
         <span class="field full-width">
           <label>Board Size</label>
-          <input type="numeric" name="boardWidth" placeholder="w" />
+          <input type="numeric" autocomplete="off" name="boardWidth" placeholder="w" />
           <span>x</span>
-          <input type="numeric" name="boardHeight" placeholder="h" />
+          <input type="numeric" autocomplete="off" name="boardHeight" placeholder="h" />
         </span>
 
         <span class="field full-width">
@@ -99,12 +99,12 @@
 
         <span class="field humans">
           <label>Initial Human<br />Population</label>
-          <input type="numeric" name="initialHumanPopulation" placeholder="%" />
+          <input type="numeric" autocomplete="off" name="initialHumanPopulation" placeholder="%" />
         </span>
 
         <span class="field zombies">
           <label>Initial Zombie<br />Population</label>
-          <input type="numeric" name="initialZombiePopulation" placeholder="%" />
+          <input type="numeric" autocomplete="off" name="initialZombiePopulation" placeholder="%" />
         </span>
       </section>
 
@@ -113,22 +113,22 @@
       <section>
         <span class="field humans">
           <label>Humans</label>
-          <input type="numeric" name="humanStrength" placeholder="%" />
+          <input type="numeric" autocomplete="off" name="humanStrength" placeholder="%" />
         </span>
 
         <span class="field zombies">
           <label>Zombies</label>
-          <input type="numeric" name="zombieStrength" placeholder="%" />
+          <input type="numeric" autocomplete="off" name="zombieStrength" placeholder="%" />
         </span>
 
         <span class="field humans">
           <label>Crowding<br />Boost</label>
-          <input type="numeric" name="humanCrowdingBoost" placeholder="%" />
+          <input type="numeric" autocomplete="off" name="humanCrowdingBoost" placeholder="%" />
         </span>
 
         <span class="field zombies">
           <label>Crowding<br />Boost</label>
-          <input type="numeric" name="zombieCrowdingBoost" placeholder="%" />
+          <input type="numeric" autocomplete="off" name="zombieCrowdingBoost" placeholder="%" />
         </span>
 
       </section>
@@ -137,12 +137,12 @@
       <section>
         <span class="field humans">
           <label>Humans</label>
-          <input type="numeric" name="humanOvercrowding" placeholder="#" />
+          <input type="numeric" autocomplete="off" name="humanOvercrowding" placeholder="#" />
         </span>
 
         <span class="field zombies">
           <label>Zombies</label>
-          <input type="numeric" name="zombieOvercrowding" placeholder="#" />
+          <input type="numeric" autocomplete="off" name="zombieOvercrowding" placeholder="#" />
         </span>
 
       </section>
@@ -151,17 +151,17 @@
       <section>
         <span class="field humans">
           <label>Humans</label>
-          <input type="numeric" name="humanMigration" placeholder="%" />
+          <input type="numeric" autocomplete="off" name="humanMigration" placeholder="%" />
         </span>
 
         <span class="field zombies">
           <label>Zombies</label>
-          <input type="numeric" name="zombieMigration" placeholder="%" />
+          <input type="numeric" autocomplete="off" name="zombieMigration" placeholder="%" />
         </span>
 
         <span class="field humans">
           <label>Colonizing<br />Likelihood</label>
-          <input type="numeric" name="humanColonizing" placeholder="%" />
+          <input type="numeric" autocomplete="off" name="humanColonizing" placeholder="%" />
         </span>
 
       </section>
@@ -172,12 +172,12 @@
           <header>In Safety</header>
           <span class="field humans">
             <label>Humans<br />Required</label>
-            <input type="numeric" name="humansRequiredForSafeReproduction" placeholder="#" />
+            <input type="numeric" autocomplete="off" name="humansRequiredForSafeReproduction" placeholder="#" />
           </span>
 
           <span class="field humans">
             <label>Reproduction<br />Likelihood</label>
-            <input type="numeric" name="likelihoodOfSafeReproduction" placeholder="%" />
+            <input type="numeric" autocomplete="off" name="likelihoodOfSafeReproduction" placeholder="%" />
           </span>
 
         </fieldset>
@@ -186,12 +186,12 @@
           <header>Around Zombies</header>
           <span class="field humans">
             <label>Humans<br />Required</label>
-            <input type="numeric" name="humansRequiredForChaoticReproduction" placeholder="#" />
+            <input type="numeric" autocomplete="off" name="humansRequiredForChaoticReproduction" placeholder="#" />
           </span>
 
           <span class="field humans">
             <label>Reproduction<br />Likelihood</label>
-            <input type="numeric" name="likelihoodOfChaoticReproduction" placeholder="%" />
+            <input type="numeric" autocomplete="off" name="likelihoodOfChaoticReproduction" placeholder="%" />
           </span>
 
         </fieldset>
@@ -200,7 +200,7 @@
       <section class="buttons">
         <span>
           <label>Generation<br />Step Timing</label>
-          <input type="numeric" name="generationSpeed" placeholder="ms" />
+          <input type="numeric" autocomplete="off" name="generationSpeed" placeholder="ms" />
         </span>
         <button id="run">Run</button>
       </section>
@@ -214,8 +214,7 @@
         GameOfLife = function(container){
           this.container = container;
           this.engine = new Worker('engine.js');
-          this.engine.onmessage = receiveMessage.bind(this);
-          //this.engine.addEventListener('message', receiveMessage.bind(this));
+          this.engine.addEventListener('message', receiveMessage.bind(this));
           requestAnimationFrame(drawGeneration.bind(this));
         }
 
@@ -350,6 +349,7 @@
       var fields = document.getElementById('controls').getElementsByTagName('input');
 
       var getSettingValues = function(){
+        console.log('get setting values');
         var s = {},settingName;
         for(var i=0,el; el=fields[i]; i++){
           settingName = el.getAttribute('name');
@@ -359,7 +359,20 @@
         game.setOptions(s);
       }
 
+      var bumpValue = function(ev){
+        if(!(ev.keyIdentifier == "Up" || ev.keyIdentifier == "Down")) return;
+        var text = ev.target.value, decimalIndex, val, decimalPlaces = 0;
+        if(decimalIndex = text.indexOf('.') > -1) decimalPlaces = text.length - decimalIndex - 1;
+        val = parseFloat(text) * Math.pow(10,decimalPlaces);
+        if(ev.keyIdentifier == "Up") val++;
+        if(ev.keyIdentifier == "Down") val--;
+        if(val < 0) return;
+        val = val / Math.pow(10,decimalPlaces);
+        ev.target.value = val.toFixed(decimalPlaces);
+      }
+
       for(var i=0,el; el=fields[i]; i++){
+        el.addEventListener("keyup", bumpValue, true);
         el.addEventListener("keyup", getSettingValues, false);
         el.addEventListener("click", getSettingValues, false);
         el.addEventListener("change", getSettingValues, false);
