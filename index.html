@@ -6,6 +6,13 @@
       html, body { width: 100%; height: 100%; margin: 0; padding: 0; background: url('grey_wash_wall.png'); font-family: 'Handlee', cursive; }
       h1 { text-align: center; color: #F7F5F4; text-shadow: 0 0 15px #000; position: absolute; margin: 0; top: 0; width: 100%; padding: 0; }
       h1 .zombies { color: #FF0000; }
+      .undead-population-count {
+        color: #FF0000;
+        position: absolute;
+        text-align: right;
+        width: 100%;
+        text-shadow: 0 0 10px #000;
+      }
       #gameboard { text-align: center; height: 100%; width: 100%; }
       #gameboard:after { content: ' '; width: 0; height: 100%; display: inline-block; vertical-align: middle; }
       #canvas { display: inline-block; vertical-align: middle; background: #fff;
@@ -13,6 +20,7 @@
         border-image: url("torn-paper-edges.png") 4 8 7 6 round;
         background-clip: padding-box;
         border-width: 5px;
+        position: relative;
       }
       #controls {
         display: inline-block; width: 280px; padding: 5px; background: url('ricepaper2.png'); font-size: 12px; vertical-align: middle; text-align: left; padding: 10px;
@@ -220,13 +228,15 @@
           }
         }
 
-        var drawGameboard = function(container, width, height){
-          container.innerHTML = "";
+        var drawGameboard = function(){
+          this.container.innerHTML = "";
           var canvas = document.createElement('canvas');
-          canvas.setAttribute('height', height * scale);
-          canvas.setAttribute('width', width * scale);
-          container.appendChild(canvas);
-          return canvas.getContext('2d');
+          canvas.setAttribute('this.boardHeight', this.boardHeight * scale);
+          canvas.setAttribute('this.boardWidth', this.boardWidth * scale);
+          this.container.appendChild(canvas);
+          this.undeadPopulation = this.container.appendChild(document.createElement('div'));
+          this.undeadPopulation.className="undead-population-count"
+          this.drawingContext = canvas.getContext('2d');
         }
 
         fillStyles = {
@@ -237,20 +247,23 @@
 
         var drawGeneration = function(){
           if(!this.nextGeneration || !this.drawingContext){ requestAnimationFrame(drawGeneration.bind(this)); return; }
-          nextGeneration = this.nextGeneration;
+          var nextGeneration = this.nextGeneration;
+          var census = {10: 0, 1: 0};
           this.nextGeneration = undefined;
           for(var i=0; i<this.options.boardWidth; i++){
             for(var j=0; j<this.options.boardHeight; j++){
+              census[nextGeneration[i][j]]++;
               this.drawingContext.fillStyle = fillStyles[nextGeneration[i][j]];
               this.drawingContext.fillRect(i*scale,j*scale,scale,scale);
             }
           }
+          this.undeadPopulation.innerHTML = parseInt(census[1] * 100 / (census[10] + census[1])) + '% Zombies'
           requestAnimationFrame(drawGeneration.bind(this));
         }
 
         GameOfLife.prototype.start = function(){
           if(!this.options) throw new Error('Options have not been set. Cannot start game.')
-          this.drawingContext = drawGameboard(this.container, this.options.boardWidth, this.options.boardHeight);
+          drawGameboard.call(this);
           this.engine.postMessage({cmd: 'start'});
         }
 
